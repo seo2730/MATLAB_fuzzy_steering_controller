@@ -65,6 +65,7 @@ while advance(scenario)
   
   w(i,1) = 0.02*i;
   w(i,2) = psi_dot(i,2) - psides_dot(i,2);
+  pos_real(i,:) = realCar.Position;
   i = i + 1;
 end
 
@@ -200,7 +201,38 @@ while advance(scenario)
   fuzzyCar.Velocity = [vx(k,2), out.pos.signals.values(k,1),0];
   fuzzyCar.Position = fuzzyCar.Position + [vx(k,2)*0.02, -out.pos.signals.values(k,1)*0.02,0];
   R(k) = getframe(gcf);
+  
+  vel_controller(k,:) = fuzzyCar.Velocity;
+  pos_controller(k,:) = fuzzyCar.Position;
+  
   k = k+1;
 end
 
-V = VideoWriter('fuzzy_controller.mp4','MPEG-4');
+%% Plot
+t=0:0.02:897*0.02;
+
+figure(1)
+plot(pos_real(:,2),pos_real(:,1),'k-')
+hold on
+plot(pos_controller(:,2),pos_controller(:,1),'r-')
+hold off
+legend('Real position','Optimal controller position')
+axis([-100 100 -110 110])
+
+figure(2)
+tiledlayout(2,1)
+nexttile
+plot(t,pos_real(1:898,1)-pos_controller(1:898,1),'r')
+title('Position X error')
+nexttile
+plot(t,pos_real(1:898,2)-pos_controller(1:898,2),'b')
+title('Position Y error')
+
+figure(3)
+tiledlayout(2,1)
+nexttile
+plot(t,vx(1:898,2)-vel_controller(1:898,1),'r')
+title('Velocity X error')
+nexttile
+plot(t,vy(1:898,2)+vel_controller(1:898,2),'b')
+title('Velocity Y error')
